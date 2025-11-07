@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Storage - Interactive Mind Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .mindmap {
+            padding-left: 20px;
+        }
+        
+        details {
+            margin: 8px 0;
+            padding: 5px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        details:hover {
+            background: #f8f9fa;
+        }
+        
+        details[open] {
+            border-left-color: #667eea;
+        }
+        
+        summary {
+            cursor: pointer;
+            padding: 8px 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            border-radius: 5px;
+            transition: all 0.2s;
+            user-select: none;
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        summary:hover {
+            background: #e9ecef;
+        }
+        
+        summary::before {
+            content: '▶';
+            position: absolute;
+            left: 10px;
+            transition: transform 0.3s;
+        }
+        
+        details[open] > summary::before {
+            transform: rotate(90deg);
+        }
+        
+        .level-0 > summary {
+            font-size: 1.5em;
+            color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .level-1 > summary {
+            font-size: 1.3em;
+            color: #764ba2;
+        }
+        
+        .level-2 > summary {
+            font-size: 1.1em;
+            color: #495057;
+        }
+        
+        .level-3 > summary {
+            font-size: 1em;
+            color: #6c757d;
+        }
+        
+        .content {
+            padding: 10px 15px 10px 30px;
+            margin-left: 15px;
+            border-left: 2px dashed #dee2e6;
+        }
+        
+        .item {
+            padding: 5px 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #28a745;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            font-weight: 600;
+        }
+        
+        .critical {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .tip {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            font-style: italic;
+        }
+        
+        .emoji {
+            font-style: normal;
+            margin-right: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .flow-chart {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #0066cc;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ AWS Storage - Interactive Mind Map</h1>
+        
+        <div class="controls">
+            <button onclick="expandAll()">Expand All</button>
+            <button onclick="collapseAll()">Collapse All</button>
+            <button onclick="expandLevel(1)">Level 1</button>
+            <button onclick="expandLevel(2)">Level 2</button>
+            <button onclick="expandLevel(3)">Level 3</button>
+        </div>
+        
+        <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search mind map... (e.g., 'EBS', 'S3', 'security')">
+        
+        <div class="mindmap">
+            <details class="level-0" open>
+                <summary><span class="emoji">🗄️</span>AWS STORAGE</summary>
+                <div class="content">
+                    
+                    <!-- BLOCK STORAGE -->
+                    <details class="level-1" open>
+                        <summary><span class="emoji">📦</span>BLOCK STORAGE (Instance-attached)</summary>
+                        <div class="content">
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">⚡</span>Instance Storage</summary>
+                                <div class="content">
+                                    <div class="item critical">Ephemeral - resets on stop/hibernate/terminate</div>
+                                    <div class="item">Performance: &gt;80K IOPS, 1,750 MB/s, &lt;1ms latency</div>
+                                    <div class="item">Use Cases: Caches, buffers, temporary data</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">💾</span>EBS (Elastic Block Store)</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>SSD Types (Random I/O, IOPS-focused)</summary>
+                                        <div class="content">
+                                            <details>
+                                                <summary><span class="emoji">⭐</span>gp3 (General Purpose - Default Choice)</summary>
+                                                <div class="content">
+                                                    <div class="item highlight">Serves 70-80% of workloads</div>
+                                                    <div class="item">Baseline: 3,000 IOPS (scalable to 16,000)</div>
+                                                    <div class="item">Baseline: 125 MiB/s (scalable to 1,000 MiB/s)</div>
+                                                    <div class="item">20% cheaper than gp2</div>
+                                                    <div class="item tip">Independent IOPS/throughput scaling</div>
+                                                    <div class="item">Use: Boot volumes, dev/test, virtual desktops</div>
+                                                </div>
+                                            </details>
+                                            
+                                            <details>
+                                                <summary>io2 Block Express (Extreme Performance)</summary>
+                                                <div class="content">
+                                                    <div class="item">256,000 IOPS max</div>
+                                                    <div class="item">4 GB/s throughput</div>
+                                                    <div class="item highlight">Sub-millisecond latency</div>
+                                                    <div class="item">99.999% availability</div>
+                                                    <div class="item">0.001% annual failure rate</div>
+                                                    <div class="item">Use: Critical databases (MySQL, SQL, PostgreSQL, Oracle, SAP)</div>
+                                                </div>
+                                            </details>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>HDD Types (Sequential I/O, Throughput-focused)</summary>
+                                        <div class="content">
+                                            <details>
+                                                <summary>st1 (Throughput Optimized)</summary>
+                                                <div class="content">
+                                                    <div class="item">500 IOPS per volume</div>
+                                                    <div class="item">Max: 500 MiB/s throughput</div>
+                                                    <div class="item">Performance measured by throughput (MB/s)</div>
+                                                    <div class="item">Use: Big data, Hadoop, Kafka, log processing, streaming</div>
+                                                </div>
+                                            </details>
+                                            
+                                            <details>
+                                                <summary>sc1 (Cold HDD - Lowest Cost)</summary>
+                                                <div class="content">
+                                                    <div class="item">250 IOPS per volume</div>
+                                                    <div class="item">Max: 250 MiB/s throughput</div>
+                                                    <div class="item highlight">Lowest cost option</div>
+                                                    <div class="item">Use: Infrequently accessed data, cold storage</div>
+                                                </div>
+                                            </details>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>📸 Snapshots</summary>
+                                        <div class="content">
+                                            <div class="item">Incremental backups stored in S3</div>
+                                            <div class="item">Snapshot Lock: Governance/Compliance modes</div>
+                                            <div class="item">Snapshots Archive: 75% cost reduction, 72hr restore</div>
+                                            <div class="item tip">Use to move volumes across AZs</div>
+                                            <div class="item">Foundation for creating AMIs</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>💰 Cost Optimization</summary>
+                                        <div class="content">
+                                            <div class="item">AWS Compute Optimizer for right-sizing</div>
+                                            <div class="item">Delete unused snapshots regularly</div>
+                                            <div class="item">Use Data Lifecycle Manager for automation</div>
+                                            <div class="item">Tag resources for cost tracking</div>
+                                            <div class="item">Monitor: Cost Explorer, Budgets, Trusted Advisor</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>🎯 Decision Tree</summary>
+                                        <div class="content">
+                                            <div class="flow-chart">
+                                                <strong>IOPS &gt; 80,000?</strong><br>
+                                                ✓ Yes → io1/io2 Block Express<br>
+                                                ✗ No → Continue<br><br>
+                                                
+                                                <strong>Latency &lt; 1ms required?</strong><br>
+                                                ✓ Yes → io1/io2<br>
+                                                ✗ No → Continue<br><br>
+                                                
+                                                <strong>What's more important?</strong><br>
+                                                • IOPS/Latency → gp2/gp3 (cost priority) or io2 (performance)<br>
+                                                • Throughput → st1 (performance) or sc1 (cost)
+                                            </div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                    <!-- FILE STORAGE -->
+                    <details class="level-1" open>
+                        <summary><span class="emoji">📁</span>FILE STORAGE (Shared file systems)</summary>
+                        <div class="content">
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">📂</span>EFS (Elastic File System)</summary>
+                                <div class="content">
+                                    <div class="item highlight">Protocol: NFS</div>
+                                    <div class="item critical">Multi-EC2 mount capability (vs EBS single-attach)</div>
+                                    <div class="item">Serverless, auto-scales to petabytes</div>
+                                    <div class="item">99.99% availability, 11 9s durability (3 AZ)</div>
+                                    <div class="item">Up to 10 GB/s throughput, 500K IOPS</div>
+                                    
+                                    <details class="level-3">
+                                        <summary>Performance Modes</summary>
+                                        <div class="content">
+                                            <div class="item"><strong>General Purpose:</strong> Low latency, balanced performance</div>
+                                            <div class="item"><strong>Max I/O:</strong> Higher throughput, higher latency, massive parallel operations</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Storage Classes</summary>
+                                        <div class="content">
+                                            <div class="item"><strong>Standard:</strong> Frequently accessed data</div>
+                                            <div class="item highlight"><strong>IA (Infrequent Access):</strong> 92% cheaper</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <div class="item tip">Use: Home directories, CMS, web serving, containers, shared workflows</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🗂️</span>FSx Family</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>FSx for Windows</summary>
+                                        <div class="content">
+                                            <div class="item">Protocol: SMB</div>
+                                            <div class="item">Active Directory integration</div>
+                                            <div class="item">Use: Windows-based applications, file servers</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>FSx for Lustre</summary>
+                                        <div class="content">
+                                            <div class="item">Protocol: Lustre, POSIX</div>
+                                            <div class="item">Low latency, high throughput</div>
+                                            <div class="item">S3 integration for data processing</div>
+                                            <div class="item">Use: HPC, machine learning, analytics</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>FSx for NetApp ONTAP</summary>
+                                        <div class="content">
+                                            <div class="item">Protocol: NFS, SMB, iSCSI</div>
+                                            <div class="item">Advanced features: Deduplication, snapshots, replication</div>
+                                            <div class="item">Use: Enterprise apps, databases, hybrid cloud</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>FSx for OpenZFS</summary>
+                                        <div class="content">
+                                            <div class="item">Protocol: NFS (v3, v4, v4.1, v4.2)</div>
+                                            <div class="item">Built-in compression and snapshots</div>
+                                            <div class="item">Use: Linux workloads, media processing, analytics</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                    <!-- OBJECT STORAGE (S3) -->
+                    <details class="level-1" open>
+                        <summary><span class="emoji">🗄️</span>OBJECT STORAGE (S3)</summary>
+                        <div class="content">
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">📊</span>Storage Classes Spectrum</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>Frequent Access Tier</summary>
+                                        <div class="content">
+                                            <div class="item highlight"><strong>S3 Standard</strong></div>
+                                            <div class="item">99.99% availability</div>
+                                            <div class="item">3 AZ, 11 9s durability</div>
+                                            <div class="item">Millisecond latency</div>
+                                            <div class="item">Use: Active data, websites, content delivery, analytics</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Intelligent/Unpredictable Access</summary>
+                                        <div class="content">
+                                            <div class="item highlight"><strong>S3 Intelligent-Tiering</strong> (Auto-tiering)</div>
+                                            <div class="item">• Frequent Access (default, monitoring fee)</div>
+                                            <div class="item">• IA (30 days → 40% savings)</div>
+                                            <div class="item">• Archive Instant Access (90 days → 68% savings)</div>
+                                            <div class="item">• Archive Access (opt-in → 95% savings)</div>
+                                            <div class="item">• Deep Archive Access (opt-in → 95% savings)</div>
+                                            <div class="item tip">No retrieval fees, automatic movement</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Infrequent Access Tier</summary>
+                                        <div class="content">
+                                            <details>
+                                                <summary><strong>S3 Standard-IA</strong></summary>
+                                                <div class="content">
+                                                    <div class="item">99.9% availability, 3 AZ</div>
+                                                    <div class="item">30 days minimum storage</div>
+                                                    <div class="item">Retrieval fee per GB</div>
+                                                    <div class="item">Use: Backups, disaster recovery, older data</div>
+                                                </div>
+                                            </details>
+                                            
+                                            <details>
+                                                <summary><strong>S3 One Zone-IA</strong></summary>
+                                                <div class="content">
+                                                    <div class="item">99.5% availability, 1 AZ</div>
+                                                    <div class="item">30 days minimum storage</div>
+                                                    <div class="item">Retrieval fee per GB</div>
+                                                    <div class="item critical">Lower durability (single AZ risk)</div>
+                                                    <div class="item">Use: Non-critical data, secondary copies, CRR destinations</div>
+                                                </div>
+                                            </details>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Archive Tier</summary>
+                                        <div class="content">
+                                            <details>
+                                                <summary><strong>S3 Glacier Instant Retrieval</strong></summary>
+                                                <div class="content">
+                                                    <div class="item">99.9% availability, 3 AZ</div>
+                                                    <div class="item">90 days minimum storage</div>
+                                                    <div class="item highlight">Milliseconds retrieval</div>
+                                                    <div class="item">Retrieval fee per GB</div>
+                                                    <div class="item">Use: Archive with instant access needs</div>
+                                                </div>
+                                            </details>
+                                            
+                                            <details>
+                                                <summary><strong>S3 Glacier Flexible Retrieval</strong></summary>
+                                                <div class="content">
+                                                    <div class="item">99.99% availability, 3 AZ</div>
+                                                    <div class="item">90 days minimum storage</div>
+                                                    <div class="item">Minutes to 12 hours retrieval</div>
+                                                    <div class="item">Use: Accessed 1x/year, flexible timing OK</div>
+                                                </div>
+                                            </details>
+                                            
+                                            <details>
+                                                <summary><strong>S3 Glacier Deep Archive</strong></summary>
+                                                <div class="content">
+                                                    <div class="item">99.99% availability, 3 AZ</div>
+                                                    <div class="item">180 days minimum storage</div>
+                                                    <div class="item">12-48 hours retrieval</div>
+                                                    <div class="item highlight">Lowest cost storage class</div>
+                                                    <div class="item">Use: Compliance, &lt;1x/year access, 7+ year retention</div>
+                                                </div>
+                                            </details>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Ultra-Performance Tier</summary>
+                                        <div class="content">
+                                            <div class="item highlight"><strong>S3 Express One Zone</strong></div>
+                                            <div class="item critical">10x faster than S3 Standard</div>
+                                            <div class="item">Single-digit millisecond latency</div>
+                                            <div class="item">50% lower request costs</div>
+                                            <div class="item">Directory buckets (100K+ requests/sec)</div>
+                                            <div class="item">Use: Real-time analytics, ML training, media processing</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🚀</span>Performance</summary>
+                                <div class="content">
+                                    <div class="item">3,500 PUT/POST/DELETE per second per prefix</div>
+                                    <div class="item">5,500 GET/HEAD per second per prefix</div>
+                                    <div class="item highlight">Strong read-after-write consistency (default since Dec 2020)</div>
+                                    
+                                    <details class="level-3">
+                                        <summary>Optimization Techniques</summary>
+                                        <div class="content">
+                                            <div class="item">• CloudFront for caching at edge locations</div>
+                                            <div class="item">• S3 Transfer Acceleration for long-distance transfers</div>
+                                            <div class="item">• Object partitioning (random prefixes for &gt;100 req/sec)</div>
+                                            <div class="item">• Regional buckets (data closer to users)</div>
+                                            <div class="item">• Right storage class selection</div>
+                                        </div>
+                                    </details>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🔧</span>Advanced Features</summary>
+                                <div class="content">
+                                    <details class="level-3">
+                                        <summary>Versioning</summary>
+                                        <div class="content">
+                                            <div class="item">Keep multiple versions of same object</div>
+                                            <div class="item">Recover from deletions/overwrites</div>
+                                            <div class="item tip">Use Lifecycle policies to manage old versions</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Replication</summary>
+                                        <div class="content">
+                                            <div class="item">Multi-destination replication</div>
+                                            <div class="item">Cross-region or same-region</div>
+                                            <div class="item">Asynchronous, automatic</div>
+                                            <div class="item">Improves availability and durability</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>S3 Object Lambda</summary>
+                                        <div class="content">
+                                            <div class="item">Transform data on GET requests</div>
+                                            <div class="item">Use Lambda functions for processing</div>
+                                            <div class="item">Examples: Redact PII, resize images, transcode videos</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>S3 on Outposts</summary>
+                                        <div class="content">
+                                            <div class="item">On-premises S3 storage</div>
+                                            <div class="item">OUTPOSTS storage class</div>
+                                            <div class="item">Data residency compliance</div>
+                                            <div class="item">Low latency for on-premises apps</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>S3 Tables</summary>
+                                        <div class="content">
+                                            <div class="item">Apache Iceberg format</div>
+                                            <div class="item">Tabular data storage</div>
+                                            <div class="item">3x faster than unmanaged Iceberg</div>
+                                            <div class="item">Table buckets for analytics workloads</div>
+                                        </div>
+                                    </details>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🔐</span>Security</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>Access Control</summary>
+                                        <div class="content">
+                                            <div class="item highlight">Block Public Access (default ON for new buckets)</div>
+                                            <div class="item">Bucket Policies (explicit permissions, JSON)</div>
+                                            <div class="item">ACLs (deprecated, disabled by default)</div>
+                                            <div class="item">S3 Access Points (team-based, prefix-restricted access)</div>
+                                            <div class="item critical">❌ Avoid wildcards (*) in policies</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Encryption</summary>
+                                        <div class="content">
+                                            <div class="item highlight"><strong>SSE-S3:</strong> AWS-managed keys, AES-256 (default, free)</div>
+                                            <div class="item"><strong>SSE-KMS:</strong> Customer master keys, audit trail (extra cost)</div>
+                                            <div class="item"><strong>SSE-C:</strong> Customer-provided keys, customer manages</div>
+                                            <div class="item"><strong>Client-side:</strong> Encrypt before upload</div>
+                                            <div class="item tip">Enforce HTTPS (TLS) with bucket policy</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Monitoring & Compliance</summary>
+                                        <div class="content">
+                                            <div class="item">VPC Endpoints (private access, no internet)</div>
+                                            <div class="item">Server Access Logs (detailed request logs)</div>
+                                            <div class="item">CloudTrail (API activity tracking)</div>
+                                            <div class="item">Amazon Macie (ML-based PII detection)</div>
+                                            <div class="item">IAM Access Analyzer (unintended access detection)</div>
+                                            <div class="item">AWS Config Rules (compliance checks)</div>
+                                            <div class="item">S3 Object Lock (WORM model)</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Best Practices</summary>
+                                        <div class="content">
+                                            <div class="item">Unique key names per object</div>
+                                            <div class="item">Hierarchical naming with delimiters (/)</div>
+                                            <div class="item">Avoid special characters</div>
+                                            <div class="item">Random prefixes for high request rates (&gt;100/sec)</div>
+                                            <div class="item">Descriptive, consistent naming conventions</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">💰</span>Cost Optimization</summary>
+                                <div class="content">
+                                    <details class="level-3">
+                                        <summary>Lifecycle Policies</summary>
+                                        <div class="content">
+                                            <div class="item">Transition: Standard → IA → Glacier → Deep Archive</div>
+                                            <div class="item">Expiration: Delete old versions automatically</div>
+                                            <div class="item">Object-level granularity</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Intelligent-Tiering</summary>
+                                        <div class="content">
+                                            <div class="item highlight">Automatic movement between tiers</div>
+                                            <div class="item">No retrieval fees</div>
+                                            <div class="item">Small monitoring fee</div>
+                                            <div class="item">Best for unpredictable access patterns</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Other Techniques</summary>
+                                        <div class="content">
+                                            <div class="item">S3 Transfer Acceleration (long-distance transfers)</div>
+                                            <div class="item">S3 Batch Operations (bulk operations)</div>
+                                            <div class="item">Delete unused objects/versions</div>
+                                            <div class="item">Archive cold data to Glacier</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Monitoring Tools</summary>
+                                        <div class="content">
+                                            <div class="item">S3 Storage Lens (60+ metrics, insights)</div>
+                                            <div class="item">S3 Inventory (daily/weekly reports)</div>
+                                            <div class="item">CloudWatch (request metrics)</div>
+                                        </div>
+                                    </details>
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                    <!-- HYBRID STORAGE -->
+                    <details class="level-1">
+                        <summary><span class="emoji">🔗</span>HYBRID STORAGE (On-premises ↔ AWS)</summary>
+                        <div class="content">
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🌉</span>AWS Storage Gateway</summary>
+                                <div class="content">
+                                    <div class="item highlight">Bridge between on-premises and AWS storage</div>
+                                    <div class="item">Local cache for low-latency access</div>
+                                    <div class="item">Hardware appliance or VM deployment</div>
+                                    <div class="item">Standard protocols: NFS, SMB, iSCSI</div>
+                                    
+                                    <details class="level-3">
+                                        <summary>S3 File Gateway</summary>
+                                        <div class="content">
+                                            <div class="item">Protocols: NFS/SMB</div>
+                                            <div class="item">On-premises file server → S3 objects</div>
+                                            <div class="item">Features: Versioning, deduplication, tiering</div>
+                                            <div class="item">Use: Cloud-backed file shares, hybrid storage</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>FSx File Gateway</summary>
+                                        <div class="content">
+                                            <div class="item">Protocol: SMB</div>
+                                            <div class="item">On-premises → FSx for Windows File Server</div>
+                                            <div class="item">Low-latency access to cloud Windows file shares</div>
+                                            <div class="item">Use: Offload on-premises NAS to AWS</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Tape Gateway</summary>
+                                        <div class="content">
+                                            <div class="item">Protocol: iSCSI (VTL - Virtual Tape Library)</div>
+                                            <div class="item">Virtual tapes → S3/Glacier</div>
+                                            <div class="item">Replace physical tape libraries</div>
+                                            <div class="item">Use: Backup/archival, tape migration to cloud</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Volume Gateway</summary>
+                                        <div class="content">
+                                            <div class="item">Protocol: iSCSI</div>
+                                            <div class="item">Block storage → S3</div>
+                                            <div class="item"><strong>Cached Mode:</strong> Local cache + cloud backing</div>
+                                            <div class="item"><strong>Stored Mode:</strong> All data stored in cloud</div>
+                                            <div class="item">Each volume up to 32 TB</div>
+                                            <div class="item">Use: VM storage, databases, scalable block storage</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">💾</span>AWS Backup</summary>
+                                <div class="content">
+                                    <div class="item">Centralized backup management</div>
+                                    <div class="item">Automated scheduling and retention</div>
+                                    <div class="item">Supports: EC2, EBS, S3, RDS, DynamoDB, EFS, FSx, etc.</div>
+                                    <div class="item">Cross-region and cross-account backups</div>
+                                    <div class="item">Use: Compliance, disaster recovery, unified backup</div>
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                    <!-- STORAGE SELECTION & MIGRATION -->
+                    <details class="level-1">
+                        <summary><span class="emoji">📊</span>STORAGE SELECTION & MIGRATION</summary>
+                        <div class="content">
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🎯</span>Decision Matrix</summary>
+                                <div class="content">
+                                    <div class="flow-chart">
+                                        <strong>Need persistent storage for single EC2?</strong> → EBS<br>
+                                        <strong>Need shared file storage for multiple EC2?</strong> → EFS<br>
+                                        <strong>Need Windows file server?</strong> → FSx for Windows<br>
+                                        <strong>Need high-performance computing?</strong> → FSx for Lustre<br>
+                                        <strong>Need NetApp features?</strong> → FSx for NetApp ONTAP<br>
+                                        <strong>Need object storage or big data?</strong> → S3<br>
+                                        <strong>Need hybrid on-premises to cloud?</strong> → Storage Gateway<br>
+                                        <strong>Need ultra-low latency S3?</strong> → S3 Express One Zone
+                                    </div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">📋</span>Assessment Phases</summary>
+                                <div class="content">
+                                    <div class="item"><strong>1. Discovery:</strong> Inventory current storage (capacity, IOPS, latency, protocols)</div>
+                                    <div class="item"><strong>2. Data Collection:</strong> Use DataSync Discovery, Migration Hub (7-14 days metrics)</div>
+                                    <div class="item"><strong>3. Service Mapping:</strong> Match workloads to AWS services</div>
+                                    <div class="item">  • High-performance → FSx/EBS</div>
+                                    <div class="item">  • Archival → S3 Glacier</div>
+                                    <div class="item">  • Shared files → EFS</div>
+                                    <div class="item"><strong>4. Business Case:</strong> CapEx → OpEx, TCO, ROI analysis</div>
+                                    <div class="item"><strong>5. PoC:</strong> Test before full migration</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🚀</span>Migration Best Practices</summary>
+                                <div class="content">
+                                    <div class="item">Use automated tools: DataSync, Backup</div>
+                                    <div class="item">Apply Intelligent-Tiering for unpredictable access</div>
+                                    <div class="item">Archive cold data to Glacier</div>
+                                    <div class="item">Delete orphaned/test resources before migration</div>
+                                    <div class="item">Validate performance post-migration</div>
+                                    <div class="item">Plan network bandwidth (Direct Connect/Snowball)</div>
+                                    <div class="item">Create rollback plan</div>
+                                    <div class="item">Pilot testing with small datasets</div>
+                                    <div class="item">Post-migration monitoring (30-90 days)</div>
+                                    <div class="item">Implement governance: Lifecycle rules, KMS encryption, CloudTrail</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🔄</span>Selection Flowcharts</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>Block Storage Decision</summary>
+                                        <div class="content">
+                                            <div class="flow-chart">
+                                                <strong>Need storage?</strong><br>
+                                                ├─ Temporary/ephemeral → Instance Storage<br>
+                                                └─ Persistent → EBS<br>
+                                                &nbsp;&nbsp;&nbsp;├─ IOPS important?<br>
+                                                &nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;├─ &gt;80K IOPS → io2 Block Express<br>
+                                                &nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;└─ &lt;80K IOPS → gp3<br>
+                                                &nbsp;&nbsp;&nbsp;└─ Throughput important?<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ Performance priority → st1<br>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Cost priority → sc1
+                                            </div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>File Storage Decision</summary>
+                                        <div class="content">
+                                            <div class="flow-chart">
+                                                <strong>Need file storage?</strong><br>
+                                                ├─ General shared Linux → EFS<br>
+                                                ├─ Windows workloads → FSx for Windows<br>
+                                                ├─ HPC/ML → FSx for Lustre<br>
+                                                ├─ NetApp features → FSx for NetApp ONTAP<br>
+                                                └─ Linux + OpenZFS → FSx for OpenZFS
+                                            </div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>S3 Storage Class Decision</summary>
+                                        <div class="content">
+                                            <div class="flow-chart">
+                                                <strong>How often accessed?</strong><br>
+                                                ├─ Frequently → S3 Standard<br>
+                                                ├─ Unpredictable → S3 Intelligent-Tiering<br>
+                                                ├─ Infrequently (3 AZ) → S3 Standard-IA<br>
+                                                ├─ Infrequently (1 AZ OK) → S3 One Zone-IA<br>
+                                                ├─ Archival (instant) → S3 Glacier Instant<br>
+                                                ├─ Archival (flexible) → S3 Glacier Flexible<br>
+                                                └─ Archival (long-term) → S3 Glacier Deep Archive<br><br>
+                                                <strong>Need ultra-performance?</strong> → S3 Express One Zone
+                                            </div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                    <!-- KEY RELATIONSHIPS -->
+                    <details class="level-1">
+                        <summary><span class="emoji">🔗</span>KEY RELATIONSHIPS & DEPENDENCIES</summary>
+                        <div class="content">
+                            <div class="item highlight">EBS → Single EC2 (1:1 attachment, same AZ)</div>
+                            <div class="item highlight">EFS → Multi-EC2 (shared, cross-AZ)</div>
+                            <div class="item highlight">FSx → Specialized workloads (Windows/HPC/NetApp/OpenZFS)</div>
+                            <div class="item highlight">S3 → Object storage (unlimited scale, global)</div>
+                            <div class="item">Storage Gateway → Hybrid bridge (on-prem ↔ AWS)</div>
+                            <div class="item">  ├─ S3 File Gateway → S3</div>
+                            <div class="item">  ├─ FSx File Gateway → FSx</div>
+                            <div class="item">  ├─ Tape Gateway → S3/Glacier</div>
+                            <div class="item">  └─ Volume Gateway → S3</div>
+                            <br>
+                            <div class="item tip"><strong>Cost Optimization Chain:</strong></div>
+                            <div class="item">S3 Standard → Lifecycle → IA → Glacier → Deep Archive</div>
+                            <div class="item">↓</div>
+                            <div class="item">Intelligent-Tiering (automatic)</div>
+                            <br>
+                            <div class="item tip"><strong>Security Layers:</strong></div>
+                            <div class="item">Block Public Access → Bucket Policies → Encryption → Monitoring</div>
+                            <br>
+                            <div class="item tip"><strong>Migration Flow:</strong></div>
+                            <div class="item">Assessment → Service Mapping → Business Case → PoC → Migration</div>
+                        </div>
+                    </details>
+                    
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <script>
+        function expandAll() {
+            document.querySelectorAll('details').forEach(detail => detail.open = true);
+        }
+        
+        function collapseAll() {
+            document.querySelectorAll('details').forEach(detail => detail.open = false);
+        }
+        
+        function expandLevel(level) {
+            collapseAll();
+            for (let i = 0; i <= level; i++) {
+                document.querySelectorAll(`.level-${i}`).forEach(detail => detail.open = true);
+            }
+        }
+        
+        // Search functionality
+        const searchBox = document.getElementById('searchBox');
+        let originalHTML = document.querySelector('.mindmap').innerHTML;
+        
+        searchBox.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const mindmap = document.querySelector('.mindmap');
+            
+            if (searchTerm === '') {
+                mindmap.innerHTML = originalHTML;
+                return;
+            }
+            
+            // Get all text content
+            const allItems = mindmap.querySelectorAll('.item, summary');
+            
+            allItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    // Highlight matching text
+                    const regex = new RegExp(`(${searchTerm})`, 'gi');
+                    const originalText = item.innerHTML;
+                    
+                    // Only highlight if not already highlighted
+                    if (!originalText.includes('<mark>')) {
+                        const newText = item.textContent.replace(regex, '<mark style="background: yellow; padding: 2px;">$1</mark>');
+                        item.innerHTML = newText;
+                    }
+                    
+                    // Open parent details
+                    let parent = item.closest('details');
+                    while (parent) {
+                        parent.open = true;
+                        parent = parent.parentElement.closest('details');
+                    }
+                }
+            });
+        });
+        
+        // Preserve original HTML for search reset
+        window.addEventListener('load', function() {
+            originalHTML = document.querySelector('.mindmap').innerHTML;
+        });
+    </script>
+</body>
+</html>
