@@ -194,20 +194,7 @@
             border-left: 4px solid #0066cc;
         }
         
-        .search-box {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        
-        .search-box:focus {
-            outline: none;
-            border-color: #764ba2;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
-        }
+
     </style>
 </head>
 <body>
@@ -222,15 +209,13 @@
             <button onclick="expandLevel(3)">Level 3</button>
         </div>
         
-        <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search mind map... (e.g., 'EBS', 'S3', 'security')">
-        
         <div class="mindmap">
             <details class="level-0" open>
                 <summary><span class="emoji">🗄️</span>AWS STORAGE</summary>
                 <div class="content">
                     
                     <!-- BLOCK STORAGE -->
-                    <details class="level-1" open>
+                    <details class="level-1">
                         <summary><span class="emoji">📦</span>BLOCK STORAGE (Instance-attached)</summary>
                         <div class="content">
                             
@@ -349,7 +334,7 @@
                     </details>
                     
                     <!-- FILE STORAGE -->
-                    <details class="level-1" open>
+                    <details class="level-1">
                         <summary><span class="emoji">📁</span>FILE STORAGE (Shared file systems)</summary>
                         <div class="content">
                             
@@ -430,7 +415,7 @@
                     </details>
                     
                     <!-- OBJECT STORAGE (S3) -->
-                    <details class="level-1" open>
+                    <details class="level-1">
                         <summary><span class="emoji">🗄️</span>OBJECT STORAGE (S3)</summary>
                         <div class="content">
                             
@@ -940,50 +925,6 @@
                 document.querySelectorAll(`.level-${i}`).forEach(detail => detail.open = true);
             }
         }
-        
-        // Search functionality
-        const searchBox = document.getElementById('searchBox');
-        let originalHTML = document.querySelector('.mindmap').innerHTML;
-        
-        searchBox.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const mindmap = document.querySelector('.mindmap');
-            
-            if (searchTerm === '') {
-                mindmap.innerHTML = originalHTML;
-                return;
-            }
-            
-            // Get all text content
-            const allItems = mindmap.querySelectorAll('.item, summary');
-            
-            allItems.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    // Highlight matching text
-                    const regex = new RegExp(`(${searchTerm})`, 'gi');
-                    const originalText = item.innerHTML;
-                    
-                    // Only highlight if not already highlighted
-                    if (!originalText.includes('<mark>')) {
-                        const newText = item.textContent.replace(regex, '<mark style="background: yellow; padding: 2px;">$1</mark>');
-                        item.innerHTML = newText;
-                    }
-                    
-                    // Open parent details
-                    let parent = item.closest('details');
-                    while (parent) {
-                        parent.open = true;
-                        parent = parent.parentElement.closest('details');
-                    }
-                }
-            });
-        });
-        
-        // Preserve original HTML for search reset
-        window.addEventListener('load', function() {
-            originalHTML = document.querySelector('.mindmap').innerHTML;
-        });
     </script>
 </body>
 </html>
