@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Storage Immersion Day - Design Patterns & Insights</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 3px solid #FF9900;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #232F3E;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .workshop-meta {
+            display: flex;
+            gap: 20px;
+            color: #666;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+        
+        .workshop-meta a {
+            color: #FF9900;
+            text-decoration: none;
+        }
+        
+        .workshop-meta a:hover {
+            text-decoration: underline;
+        }
+        
+        .pattern {
+            margin-bottom: 40px;
+            border-left: 4px solid #FF9900;
+            padding-left: 20px;
+        }
+        
+        .pattern h2 {
+            color: #232F3E;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        
+        .core-pattern {
+            background: #FFF8E7;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 500;
+            color: #232F3E;
+        }
+        
+        .section {
+            margin: 20px 0;
+        }
+        
+        .section h3 {
+            color: #232F3E;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+
+        
+        .use-case {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #232F3E;
+        }
+        
+        .use-case h4 {
+            color: #232F3E;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .use-case ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        
+        .use-case li {
+            margin: 5px 0;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        
+        .expandable {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .expandable {
+            position: relative;
+        }
+        
+        .expandable::after {
+            content: "▼";
+            position: absolute;
+            right: 10px;
+            transition: transform 0.2s;
+            color: #232F3E;
+            font-size: 12px;
+        }
+        
+        .expandable.expanded::after {
+            transform: rotate(-90deg);
+        }
+        
+        .expandable-content {
+            display: none;
+            margin-top: 10px;
+        }
+        
+        .expandable-content.show {
+            display: block;
+        }
+        
+        .pattern > .expandable-content {
+            padding-left: 0;
+        }
+        
+        .use-case .expandable-content,
+        .phase .expandable-content {
+            padding-left: 15px;
+        }
+        
+        .gotcha {
+            background: #FFF3F3;
+            border-left: 3px solid #D32F2F;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .gotcha ul {
+            margin-left: 35px;
+        }
+        
+        .gotcha strong {
+            color: #D32F2F;
+        }
+        
+        .key-insight {
+            background: #E8F5E9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        
+        .key-insight strong {
+            color: #2E7D32;
+        }
+        
+        .tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .tool-card {
+            background: white;
+            border: 2px solid #E0E0E0;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        
+        .tool-card h4 {
+            color: #232F3E;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tool-card h4::before {
+            content: "🛠️";
+        }
+        
+        .phases {
+            counter-reset: phase;
+        }
+        
+        .phase {
+            background: #f9f9f9;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 6px;
+            border-left: 4px solid #FF9900;
+            counter-increment: phase;
+            position: relative;
+        }
+        
+        .phase::before {
+            content: "Phase " counter(phase);
+            position: absolute;
+            top: -12px;
+            left: 15px;
+            background: #FF9900;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .phase h4 {
+            color: #232F3E;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 10px 20px;
+            background: #232F3E;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+        
+        .back-link:hover {
+            background: #FF9900;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .pattern {
+                padding-left: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 AWS Storage Immersion Day</h1>
+            <div class="workshop-meta">
+                <span>📅 Workshop Date: November 2025</span>
+                <span>🔗 <a href="https://catalog.us-east-1.prod.workshops.aws/workshops/74237958-77c8-4e7f-a02f-ae201a04d759/en-US" target="_blank">Official Workshop Link</a></span>
+                <span>🏷️ Topics: S3, DataSync, File Gateway, Security, Performance</span>
+            </div>
+        </div>
+
+        <!-- Module 1: S3 Security -->
+        <div class="pattern">
+            <h2 class="expandable">Module 1: S3 Security - Bucket Policies for Defense in Depth</h2>
+            <div class="expandable-content">
+            
+            <div class="core-pattern">
+                <strong>Core Pattern:</strong> Use bucket policies to enforce security requirements at the bucket level
+            </div>
+
+            <div class="section">
+                <h3>Bucket Policy Use Cases</h3>
+                
+                <div class="use-case">
+                    <h4 class="expandable">1. Enforce HTTPS Transport</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>Deny requests without SSL (<code>aws:SecureTransport</code> condition)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <h4 class="expandable">2. Enforce Encryption at Rest</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>Require SSE-KMS with customer managed key</li>
+                            <li>Separate key administrators vs operators (least privilege)</li>
+                        </ul>
+                        <div class="gotcha">
+                            <strong>⚠️ Gotcha:</strong> Without bucket policy, default encryption can be overridden via API headers. With policy = encryption type must match request
+                        </div>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <h4 class="expandable">3. Restrict Network Access</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>Limit to VPC endpoint only (<code>aws:SourceVpce</code> condition)</li>
+                        </ul>
+                        <div class="gotcha">
+                            <strong>⚠️ Gotcha:</strong> VPC endpoint exists ≠ traffic uses it. Must attach route table to redirect S3 traffic through endpoint (otherwise flows via IGW)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Complementary Tools</h3>
+                
+                <div class="tools">
+                    <div class="tool-card">
+                        <h4>AWS Config</h4>
+                        <p><strong>Purpose:</strong> Detect policy violations</p>
+                        <p>Example: <code>s3-bucket-public-read-prohibited</code> rule generates non-compliance alerts</p>
+                    </div>
+                    
+                    <div class="tool-card">
+                        <h4>Access Analyzer for S3</h4>
+                        <p><strong>Purpose:</strong> Identify external access</p>
+                        <p>S3 feature (not IAM Access Analyzer). Surfaces unintended public/cross-account access</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="key-insight">
+                <strong>💡 Key Insight:</strong> Bucket policies = proactive enforcement, Config/Access Analyzer = detective controls
+            </div>
+            </div>
+        </div>
+
+        <!-- Module 2: Performance -->
+        <div class="pattern">
+            <h2 class="expandable">Module 2: Storage Performance - Parallelization for Throughput</h2>
+            <div class="expandable-content">
+            
+            <div class="core-pattern">
+                <strong>Core Pattern:</strong> Distribute operations across multiple threads/inodes to leverage AWS storage's distributed architecture
+            </div>
+
+            <div class="section">
+                <h3>S3 Optimization Techniques</h3>
+                
+                <div class="use-case">
+                    <h4 class="expandable">1. Multipart Upload → Break large objects into chunks</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>5GB file → 16MB chunks = 313 PUTs vs 1 PUT</li>
+                            <li>Trade-off: Speed costs money ($0.005 per 1,000 requests)</li>
+                            <li><em>"Paying a toll to go faster"</em></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <h4 class="expandable">2. Threaded Operations → Parallel small file uploads</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>Multi-threaded <code>aws s3 sync</code> significantly faster</li>
+                            <li>Each thread handles independent file/chunk</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <h4 class="expandable">3. S3-to-S3 Copies → Use native copy methods</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><code>aws s3api copy-object</code> or <code>aws s3 cp</code> with Transfer Manager</li>
+                            <li>Keeps data inside S3 network (no EC2 bandwidth)</li>
+                            <li>Faster + multi-threaded + cheaper</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>EFS Optimization Techniques</h3>
+                
+                <div class="use-case">
+                    <h4 class="expandable">1. Parallel Threads and Inodes → Multiple simultaneous operations</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>Leverages EFS distributed storage design</li>
+                            <li>Drives aggregate throughput and IOPS</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <h4 class="expandable">2. Sync Strategy → Per-file vs per-block</h4>
+                    <div class="expandable-content">
+                        <div class="gotcha">
+                            <strong>⚠️ Gotcha:</strong> Syncing after each block = dramatic performance degradation. Optimal: Sync after each complete file
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="key-insight">
+                <strong>💡 Key Insight:</strong> AWS distributed storage shines with parallelization—single-threaded operations underutilize available performance
+            </div>
+            </div>
+        </div>
+
+        <!-- Module 3: Migration -->
+        <div class="pattern">
+            <h2 class="expandable">Module 3: Data Migration - Phased Cutover with Hybrid Access</h2>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="../assets/images/data-migration-datasync-gateway.png" alt="Data Migration with DataSync and File Gateway" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            </div>
+            
+            <div class="expandable-content">
+            
+            <div class="core-pattern">
+                <strong>Core Pattern:</strong> Use DataSync for bulk transfer, File Gateway for hybrid access, then cutover when ready
+            </div>
+
+            <div class="section">
+                <h3>Migration Phases</h3>
+                
+                <div class="phases">
+                    <div class="phase">
+                        <h4 class="expandable">Initial Bulk Transfer → DataSync</h4>
+                        <div class="expandable-content">
+                            <ul>
+                                <li>Activate agent (target region, source public IP)</li>
+                                <li>Create locations (NFS source, S3 destination)</li>
+                                <li>Run task for all existing data</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="phase">
+                        <h4 class="expandable">Hybrid Access Period → File Gateway + Incremental DataSync</h4>
+                        <div class="expandable-content">
+                            <ul>
+                                <li>File Gateway = NFS interface to S3</li>
+                                <li>Apps continue using familiar NFS mount</li>
+                                <li>DataSync for incremental changes only</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="phase">
+                        <h4 class="expandable">Cache Synchronization → Manual refresh after external writes</h4>
+                        <div class="expandable-content">
+                            <div class="gotcha">
+                                <strong>⚠️ Gotcha:</strong> DataSync writes invisible to File Gateway until cache refresh
+                                <ul>
+                                    <li>File Gateway maintains metadata cache for performance</li>
+                                    <li>Gateway writes = auto-update cache</li>
+                                    <li>External writes (DataSync, direct S3) = manual refresh needed</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="phase">
+                        <h4 class="expandable">Final Cutover → Gateway-only operations</h4>
+                        <div class="expandable-content">
+                            <ul>
+                                <li>Unmount legacy NFS</li>
+                                <li>Delete DataSync resources (order: Task → Locations → Agent)</li>
+                                <li>All writes through Gateway → auto-sync to S3</li>
+                                <li>S3 data now accessible to other AWS services</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="key-insight">
+                <strong>💡 Key Insight:</strong> File Gateway and DataSync operate independently—understanding cache boundaries prevents "the file exists but I can't see it" production issues
+            </div>
+            </div>
+        </div>
+
+        <a href="../../index.html" class="back-link">← Back to Learning Journey</a>
+    </div>
+
+    <script>
+        // Add click handlers to all expandable elements
+        document.addEventListener('DOMContentLoaded', function() {
+            const expandables = document.querySelectorAll('.expandable');
+            
+            expandables.forEach(function(expandable) {
+                expandable.addEventListener('click', function() {
+                    this.classList.toggle('expanded');
+                    
+                    // Find the next expandable-content element
+                    let content = this.nextElementSibling;
+                    while (content && !content.classList.contains('expandable-content')) {
+                        content = content.nextElementSibling;
+                    }
+                    
+                    if (content) {
+                        content.classList.toggle('show');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
