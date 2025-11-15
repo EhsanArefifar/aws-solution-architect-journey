@@ -513,6 +513,160 @@
             </div>
         </div>
 
+        <!-- Module 4: Backup -->
+        <div class="pattern">
+            <h2 class="expandable">Module 4: AWS Backup - Tiered Protection with Compliance Monitoring</h2>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="../assets/images/storage-workshop-aws-backup.png" alt="AWS Backup Tiered Protection Architecture" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            </div>
+            
+            <div class="expandable-content">
+            
+            <div class="core-pattern">
+                <strong>Core Pattern:</strong> Implement tiered backup strategy with tag-based automation and continuous compliance monitoring
+            </div>
+
+            <div class="section">
+                <h3>Backup Plan Design</h3>
+                
+                <div class="use-case">
+                    <h4 class="expandable">Two-section structure → Rules + Resource assignment</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>Backup rules = scheduling, frequency, retention</li>
+                            <li>Resource assignment = what resources to protect</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                
+                <div class="use-case">
+                    <h4 class="expandable">Tiered vaults and plans → Gold/Silver designation</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>Gold = mission-critical / Silver = standard resources</li>
+                            <li>Separate vaults for isolation and organization</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <h4 class="expandable">Tag-based resource assignment → Automated protection</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>Works across ALL AWS Backup-supported resources (EBS, EFS, RDS, DynamoDB, etc.)</li>
+                            <li>Dynamically includes/excludes resources without manual plan updates</li>
+                        </ul>
+                        <div class="gotcha">
+                            <strong>⚠️ Gotcha:</strong> Tags must match exactly—typos exclude resources from protection
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="use-case">
+                <h4 class="expandable">On-demand backup alternative → Manual resource specification</h4>
+                <div class="expandable-content">
+                    <ul>
+                        <li>Useful for one-off protection or testing</li>
+                        <li>Bypasses tag-based automation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Backup Execution</h3>
+                
+                <div class="use-case">
+                    <h4 class="expandable">Cron expressions for scheduling → Precise control</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li><code>cron(0 * ? * * *)</code> = hourly backups</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <h4 class="expandable">Windows VSS integration → Application-consistent backups</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>Quiesces databases before snapshot (SQL Server)</li>
+                            <li>Enables clean restores without recovery procedures</li>
+                            <li>Must enable under "Advanced backup settings"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Recovery Patterns</h3>
+                
+                <div class="use-case">
+                    <h4 class="expandable">Service-specific restore behavior → No overwrites</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>EBS: Restores as new unattached volume (manual attach to instance)</li>
+                            <li>EFS: Restores to timestamped subdirectory in existing filesystem</li>
+                        </ul>
+                        <div class="gotcha">
+                            <strong>⚠️ Gotcha:</strong> AWS Backup never overwrites primary data—always creates new resources
+                        </div>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <h4 class="expandable">Recovery workflow → Attach/mount restored resources</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>EBS: Detach old → Delete → Restore → Attach new → Mount</li>
+                            <li>EFS: Automatic restore to <code>aws-backup-[timestamp]/</code> folder</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Compliance Monitoring</h3>
+                
+                <div class="use-case">
+                    <h4 class="expandable">Audit Manager frameworks → Control collections</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>Pre-built controls (frequency, retention, encryption)</li>
+                            <li>Custom thresholds (hours vs days, months vs weeks)</li>
+                            <li>AWS Config rules under the hood</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <h4 class="expandable">Non-compliance remediation → Re-evaluate after fixes</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>Manual re-evaluation triggers compliance check</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <h4 class="expandable">Compliance reporting → CSV exports</h4>
+                    <div class="expandable-content">
+                        <ul>
+                            <li>S3 bucket policy required for AWS Backup write access</li>
+                            <li>On-demand or scheduled reports</li>
+                            <li>First-time reports can take up to 1 hour</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="key-insight">
+                <strong>💡 Key Insight:</strong> AWS Backup's non-destructive restore model + tag-based automation + compliance frameworks = enterprise-grade data protection with minimal manual intervention
+            </div>
+            </div>
+        </div>
+
         <a href="../index.html" class="back-link">← Back to Learning Journey</a>
     </div>
 
