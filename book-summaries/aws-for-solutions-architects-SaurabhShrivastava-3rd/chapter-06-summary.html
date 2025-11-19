@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Compute - Interactive Mind Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #4ecdc4;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .mindmap {
+            padding-left: 20px;
+        }
+        
+        details {
+            margin: 8px 0;
+            padding: 5px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        details:hover {
+            background: #f8f9fa;
+        }
+        
+        details[open] {
+            border-left-color: #ff6b6b;
+        }
+        
+        summary {
+            cursor: pointer;
+            padding: 8px 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            border-radius: 5px;
+            transition: all 0.2s;
+            user-select: none;
+            position: relative;
+            padding-left: 12px;
+            padding-right: 40px;
+            list-style: none;
+        }
+        
+        summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        summary:hover {
+            background: #e9ecef;
+        }
+        
+        summary::after {
+            content: "▼";
+            position: absolute;
+            right: 10px;
+            transition: transform 0.2s;
+            color: #2c3e50;
+            font-size: 12px;
+        }
+        
+        details[open] > summary::after {
+            transform: rotate(-90deg);
+        }
+        
+        .level-0 > summary {
+            font-size: 1.5em;
+            color: #ff6b6b;
+            background: #fff5f5;
+        }
+        
+        .level-1 > summary {
+            font-size: 1.3em;
+            color: #4ecdc4;
+        }
+        
+        .level-2 > summary {
+            font-size: 1.1em;
+            color: #495057;
+        }
+        
+        .level-3 > summary {
+            font-size: 1em;
+            color: #6c757d;
+        }
+        
+        .content {
+            padding: 10px 15px 10px 30px;
+            margin-left: 15px;
+            border-left: 2px dashed #dee2e6;
+        }
+        
+        .item {
+            padding: 5px 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #28a745;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            font-weight: 600;
+        }
+        
+        .critical {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .tip {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            font-style: italic;
+        }
+        
+        .connection {
+            background: #e7f3ff;
+            border-left-color: #0066cc;
+            font-weight: 500;
+        }
+        
+        .relationship {
+            background: #f0e6ff;
+            border-left-color: #7c3aed;
+            font-weight: 500;
+        }
+        
+        .emoji {
+            font-style: normal;
+            margin-right: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .flow-chart {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #0066cc;
+        }
+        
+        .visual-pattern {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #00acc1;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .dependency-box {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #9c27b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <h1>💻 AWS Compute - Interactive Mind Map</h1>
+        
+        <div class="controls">
+            <button onclick="expandAll()">Expand All</button>
+            <button onclick="collapseAll()">Collapse All</button>
+            <button onclick="expandLevel(1)">Level 1</button>
+            <button onclick="expandLevel(2)">Level 2</button>
+            <button onclick="expandLevel(3)">Level 3</button>
+        </div>
+        
+        <div class="mindmap">
+            <details class="level-0" open>
+                <summary><span class="emoji">💻</span>AWS COMPUTE</summary>
+                <div class="content">
+                    
+                    <!-- EC2 -->
+                    <details class="level-1">
+                        <summary><span class="emoji">💻</span>EC2 (ELASTIC COMPUTE CLOUD)</summary>
+                        <div class="content">
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🏗️</span>Fundamentals</summary>
+                                <div class="content">
+                                    <div class="item">Virtual servers, foundation of AWS computing</div>
+                                    <div class="item">Abstraction levels: Instances → Containers → Serverless</div>
+                                    <div class="item highlight">Launched Aug 2006, 750+ instance types</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">⚙️</span>Processors</summary>
+                                <div class="content">
+                                    <div class="item">Intel Xeon (Traditional, since 2006)</div>
+                                    <div class="item">AMD EPYC (Cost-effective, 2018)</div>
+                                    <div class="item highlight">AWS Graviton (ARM-based) ⭐: Graviton processors are not available for all EC2 instances, but it is recommended to use Graviton-backed instances wherever possible for better price and performance.</div>
+                                    
+                                    <details class="level-3">
+                                        <summary>GPU Options</summary>
+                                        <div class="content">
+                                            <div class="item">AWS offers a wide range of GPU-accelerated instances to support workloads such as ML, HPC, graphics rendering, and generative AI.</div>
+                                            <div class="item">NVIDIA: P5 (8x H100), G5 (8x A10G)</div>
+                                            <div class="item">AWS Custom: F1 for custom acceleration and FE1 for scalable, low-latency AI inference, giving you the flexibility to choose the right compute for your ML solution</div>
+                                            <div class="item">AMD: Cost-effective graphics</div>
+                                        </div>
+                                    </details>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🏷️</span>Instance Families</summary>
+                                <div class="content">
+                                    <div class="tip">EC2 Instance Type Explorer (https://aws.amazon.com/ec2/instance-explorer)</div>
+                                    
+                                    <div class="item">General Purpose (Balanced)</div>
+                                    <div class="item">Compute Optimized (High CPU): HPC workloads, video encoding, ML inference, scientific modeling, dedicated gaming servers, and ad server engines</div>
+                                    <div class="item">Accelerated Computing (GPU/FPGA/Custom): AWS Accelerated Computing instances are designed to handle computationally intensive workloads requiring specialized hardware accelerators such as GPUs, FPGAs, or custom chips. ML training and inference, generative AI model development, HPC, video processing, encryption, and compression.</div>
+                                    <div class="item">Memory Optimized (High RAM): workloads that process large datasets in memory. real-time big data analytics, in-memory databases, and enterprise-class applications requiring significant memory resources.</div>
+                                    <div class="item">Storage Optimized (High IOPS/Throughput): workloads that require high, sequential read-and-write access to large datasets in local storage. These instances are ideal for distributed filesystems, data warehousing, and high-frequency online transaction processing (OLTP).</div>
+                                    <div class="item">HPC Optimized: computational fluid dynamics, molecular dynamics, weather forecasting, and large-scale scientific simulations.</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🏷️</span>Naming Convention</summary>
+                                <div class="content">
+                                    <div class="visual-pattern">
+<strong>Format: [Family][Gen][Capabilities].[Size]</strong>
+
+Family:
+  c: Compute Optimized
+  m: General Purpose
+  r: Memory Optimized
+  g: Graviton Powered
+  p: GPU Powered
+  i: I/O Optimized
+  f: FPGA Powered
+
+Capabilities:
+  a (AMD), g (Graviton), i (Intel),
+  d (NVMe), n (network), e (extra), z (high-freq)
+
+Size:
+  nano, micro, small, medium, large, xlarge... metal
+                                    </div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">💰</span>Pricing Models</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>On-Demand</summary>
+                                        <div class="content">
+                                            <div class="item">Pay-per-second, no commitment</div>
+                                            <div class="item tip">Use: Unpredictable, testing, short-term</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Reserved Instances (RI)</summary>
+                                        <div class="content">
+                                            <div class="item highlight">1-3 year, up to 72% savings</div>
+                                            <div class="item">Standard: Fixed family/region</div>
+                                            <div class="item">Convertible: Exchange for equal/higher</div>
+                                            <div class="item">Acts as auto-applied coupon</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Savings Plans</summary>
+                                        <div class="content">
+                                            <div class="item">Monetary commitment ($/hour)</div>
+                                            <div class="item">EC2 Instance Savings Plans: Up to 72%, same family, region, OS</div>
+                                            <div class="item">Compute Savings Plans: Up to 66%, any family/service (Fargate, Lambda)</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Spot Instances</summary>
+                                        <div class="content">
+                                            <div class="item highlight">Up to 90% savings</div>
+                                            <div class="item critical">2-min termination warning</div>
+                                            <div class="item tip">Use: Fault-tolerant, batch such as video encoding, ML model training, or data processing jobs</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Dedicated Hosts</summary>
+                                        <div class="content">
+                                            <div class="item">Physical server, per-host billing</div>
+                                            <div class="item tip">Use: BYOL (Oracle, SQL Server)</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Dedicated Instances</summary>
+                                        <div class="content">
+                                            <div class="item">EC2 on dedicated hardware</div>
+                                            <div class="item">Per-instance-hour billing</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Capacity Reservations</summary>
+                                        <div class="content">
+                                            <div class="item">Reserve capacity in AZ</div>
+                                            <div class="item tip">Use: DR, peak planning</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🎯</span>Compute Optimizer</summary>
+                                <div class="content">
+                                    <div class="item">Analyzes resource config/utilization by ML models</div>
+                                    <div class="item">Right-sizing recommendations</div>
+                                    <div class="item">Supports: EC2, Auto Scaling, EBS, Lambda, ECS, RDS</div>
+                                    <div class="item">Features: 1- Enhanced metrics: 3-month analysis, 2- External metrics ingestion from: Datadog, Dynatrace, Instana, New Relic for deeper analysis</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">📀</span>AMI (Amazon Machine Image)</summary>
+                                <div class="content">
+                                    <div class="item">Pre-packaged template that contains everything your instance needs to run</div>
+                                    
+                                    <details class="level-3">
+                                        <summary>Components</summary>
+                                        <div class="content">
+                                            <div class="item">OS: Linux, Windows, macOS</div>
+                                            <div class="item">Processor: ARM, x86, Mac</div>
+                                            <div class="item">Launch Permissions: Private, public, specific</div>
+                                            <div class="item">Root device storage: EBS (persistent), Instance Store (ephemeral)</div>
+                                        </div>
+                                    </details>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">✅</span>Best Practices</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>Security 🔐</summary>
+                                        <div class="content">
+                                            <div class="item">IAM roles (not users)</div>
+                                            <div class="item">Rotate access keys</div>
+                                            <div class="item">Least privilege</div>
+                                            <div class="item">Use Session Manager/Bastion (not SSH/RDP) instead of exposing ssh to the internet.</div>
+                                            <div class="item critical">You manage maintaining the EC2 OS and installed software</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Storage Management</summary>
+                                        <div class="content">
+                                            <div class="item">EBS: Persistent (default root)</div>
+                                            <div class="item">Instance Store: Ephemeral (temp data)</div>
+                                            <div class="item">Separate volumes for: application & data storage</div>
+                                            <div class="item">S3: Archival/backups</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Tagging</summary>
+                                        <div class="content">
+                                            <div class="item">Key-value pairs (Department, Level)</div>
+                                            <div class="item tip">Use: Billing, automation, security</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Limits (Quotas)</summary>
+                                        <div class="content">
+                                            <div class="item">Soft: 20 instances/region (adjustable), 5 EIP/region</div>
+                                            <div class="item">Hard: Fixed, architectural</div>
+                                            <div class="item">Request via Service Quotas console</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Backup & Recovery</summary>
+                                        <div class="content">
+                                            <div class="item">EBS snapshots (incremental, S3)</div>
+                                            <div class="item">AMIs (launch identical instances): can be created from the existing instances</div>
+                                            <div class="item">Multi-AZ deployment (availability) + ELB (reliability)</div>
+                                            <div class="item">Elastic IPs (failover) and Elastic NICs: For public-facing services use EIP; For internal systems requiring identical network identity use ENI</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                    <!-- CONTAINERS -->
+                    <details class="level-1">
+                        <summary><span class="emoji">📦</span>CONTAINERS</summary>
+                        <div class="content">
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🛠️</span>Technologies</summary>
+                                <div class="content">
+                                    <div class="item">Docker: Lightweight, portable, app + dependencies</div>
+                                    <div class="item">Kubernetes: Orchestration, auto-scaling, self-healing</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">☁️</span>AWS Services</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>ECS (Elastic Container Service)</summary>
+                                        <div class="content">
+                                            <div class="item">Fully managed AWS-native Docker orchestration</div>
+                                            <div class="item">Deep AWS integration (IAM, VPC, CloudWatch)</div>
+                                            <div class="item">No Kubernetes expertise needed</div>
+                                            <div class="item">Run on EC2 or Fargate</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>EKS (Elastic Kubernetes Service)</summary>
+                                        <div class="content">
+                                            <div class="item">Managed Kubernetes control plane</div>
+                                            <div class="item">Full K8s ecosystem (CRDs, CNI)</div>
+                                            <div class="item">GPU support</div>
+                                            <div class="item">Run on EC2, Fargate, on-premises</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Fargate (serverless compute engine for containers)</summary>
+                                        <div class="content">
+                                            <div class="item">No EC2 management</div>
+                                            <div class="item">Pay for vCPU/memory used</div>
+                                            <div class="item">Works with ECS & EKS</div>
+                                            <div class="item tip">See Serverless section below</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🎯</span>Use Cases</summary>
+                                <div class="content">
+                                    <div class="item">Microservices</div>
+                                    <div class="item">Batch processing</div>
+                                    <div class="item">ML inference</div>
+                                    <div class="item">Containerized APIs</div>
+                                    <div class="item">CI/CD pipelines</div>
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                    <!-- LOAD BALANCING -->
+                    <details class="level-1">
+                        <summary><span class="emoji">⚖️</span>LOAD BALANCING (ELB)</summary>
+                        <div class="content">
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🎛️</span>Core Features</summary>
+                                <div class="content">
+                                    <div class="item">Distribute traffic across targets across multi-AZs</div>
+                                    <div class="item">Health checks for availability (HTTP 200 OK)</div>
+                                    <div class="item">Auto-scaling, high availability</div>
+                                    <div class="item">Rules = by priority [conditions + actions]</div>
+                                    <div class="item tip">Rules allow creating highly customizable traffic routing strategies</div>
+                                    <div class="item">Rule types: Listener, target group, host/path/query-string based</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">📋</span>ELB Rules & Algorithms</summary>
+                                <div class="content">
+                                    <div class="item">Listener rules: Protocol/port → Target group</div>
+                                    <div class="item">Target group rules: Distribution algorithm</div>
+                                    <div class="item">Priorities: Lower number = higher precedence</div>
+                                    
+                                    <details class="level-3">
+                                        <summary>Algorithms</summary>
+                                        <div class="content">
+                                            <div class="item">Round robin: Sequential</div>
+                                            <div class="item">Least connections: Least-loaded</div>
+                                            <div class="item">IP hash: Session persistence</div>
+                                        </div>
+                                    </details>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🔧</span>Load Balancer Types</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>ALB: advanced routing capabilities for modern web applications</summary>
+                                        <div class="content">
+                                            <div class="item">Protocols: Layer 7 HTTP/HTTPS</div>
+                                            <div class="item">Advanced routing: URL paths, hostnames, query strings, HTTP headers, methods, and source IPs</div>
+                                            <div class="item highlight">Request-based routing: Each HTTP request can be routed independently based on rules (opposite of NLB which is flow-based)</div>
+                                            <div class="item">SSL/TLS termination</div>
+                                            <div class="item">Sticky sessions</div>
+                                            <div class="item">Targets: EC2, IP, Lambda, containers</div>
+                                            <div class="item">SNI (Server Name Indication) support for multiple HTTPS domains on the same ALB without using multiple IPs</div>
+                                            <div class="item">Dynamic port mapping</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>NLB: Limited to high-speed routing cases, analyzing IP data not headers or content of the request</summary>
+                                        <div class="content">
+                                            <div class="item">Protocols: Layer 4 TCP/UDP – versatile for apps with varying protocol needs</div>
+                                            <div class="item highlight">Ultra-low latency (<100 μs) & Millions req/sec</div>
+                                            <div class="item">Health checks: ICMP pings or 3-way TCP handshake</div>
+                                            <div class="item">Static IPs, preserve source IP</div>
+                                            <div class="item">Flow-based load balancing: maintains session (~flow~connection) affinity at the connection level: Once the NLB receives a flow, it maps that flow to a specific target and sends all packets in that flow to the same target.</div>
+                                            <div class="item tip">Use: Gaming, IoT, real-time streaming, high-throughput</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>GWLB: optimized for virtual network appliances</summary>
+                                        <div class="content">
+                                            <div class="item">Protocols: Layer 3 IP (GENEVE) - packet contents</div>
+                                            <div class="item">Deploy security appliances: Firewalls, IDS/IPS, NAT gateways</div>
+                                            <div class="item">Centralized management of network security appliances</div>
+                                            <div class="item tip">Use: Security, packet inspection, automatic scaling of virtual appliances</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>CLB (Classic Load Balancer) - DEPRECATED</summary>
+                                        <div class="content">
+                                            <div class="item">Layer 4/7, basic routing</div>
+                                            <div class="item">Round-robin (good for similar capacity endpoints), least connections, IP hash (good for stateful applications & session persistence)</div>
+                                            <div class="item">Less flexible for containers due to static port mapping</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                    <!-- SERVERLESS COMPUTE -->
+                    <details class="level-1">
+                        <summary><span class="emoji">⚡</span>SERVERLESS COMPUTE</summary>
+                        <div class="content">
+                            <div class="item highlight">No server management, automatic scaling, high availability built in, and a pay-as-you-go billing model.</div>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🎯</span>Characteristics</summary>
+                                <div class="content">
+                                    <div class="item">No server management</div>
+                                    <div class="item">Automatic scaling</div>
+                                    <div class="item">High availability built-in</div>
+                                    <div class="item">Pay-as-you-go billing</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">λ</span>AWS Lambda (FaaS)</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>Fundamentals</summary>
+                                        <div class="content">
+                                            <div class="item">Event-driven, auto-scaling</div>
+                                            <div class="item">Max 15 min execution, 10 GB memory</div>
+                                            <div class="item">Pricing: Free tier + num of requests + duration (ms-based, memory-dependent: 100 ms with 2 GB of memory costs the same as 200 ms with 1 GB)</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🔄</span>AWS Step Functions</summary>
+                                <div class="content">
+                                    <div class="item">Serverless orchestration</div>
+                                    <div class="item">Orchestrate Lambda, ECS, Glue, SageMaker</div>
+                                    <div class="item">YAML-based state machines, and visual workflow builder</div>
+                                    
+                                    <details class="level-3">
+                                        <summary>Types</summary>
+                                        <div class="content">
+                                            <div class="item">Express: High-throughput short-duration tasks, event-driven</div>
+                                            <div class="item">Standard: Long-running tasks, auditable</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <div class="item tip">Use: ML pipelines (preprocess → train → deploy)</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🚀</span>AWS Fargate</summary>
+                                <div class="content">
+                                    <div class="item">Serverless Containers hosting for ECS and EKS</div>
+                                    
+                                    <details class="level-3">
+                                        <summary>Advantages</summary>
+                                        <div class="content">
+                                            <div class="item">NoOps: No EC2 management, AWS handles patching</div>
+                                            <div class="item">Security: Dedicated host per task</div>
+                                            <div class="item">Pricing: 70% savings using Fargate Spot vs regular Fargate</div>
+                                            <div class="item">Lower TCO: Task-level isolation due to dedicated hosts</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Fargate Spot</summary>
+                                        <div class="content">
+                                            <div class="item highlight">70% savings vs regular Fargate</div>
+                                            <div class="item tip">Use: Fault-tolerant tasks</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                    <!-- HPC -->
+                    <details class="level-1">
+                        <summary><span class="emoji">🚀</span>HPC</summary>
+                        <div class="content">
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">⚙️</span>Workload Types</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>Tightly coupled (scale-up)</summary>
+                                        <div class="content">
+                                            <div class="item">CFD, molecular dynamics, weather, structural analysis</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>Loosely coupled (scale-out)</summary>
+                                        <div class="content">
+                                            <div class="item">Risk modeling, genomics, drug discovery, seismic</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">☁️</span>AWS HPC Services</summary>
+                                <div class="content">
+                                    <div class="item">EFA (Elastic Fabric Adapter), special EC2 Instance families, AWS ParallelCluster (Managed HPC platform), AWS Batch</div>
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                    <!-- HYBRID COMPUTE -->
+                    <details class="level-1">
+                        <summary><span class="emoji">🔗</span>HYBRID COMPUTE</summary>
+                        <div class="content">
+                            <div class="item">On-prem cloud infra due to the limitations of a region because of data residency, local processing, or latency requirements</div>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🏢</span>AWS Outposts</summary>
+                                <div class="content">
+                                    <div class="item">Compute and storage racks to extend AWS infrastructure, services, and tools to on-premises locations</div>
+                                    <div class="item">Available Services: EC2, ECS, EKS, EBS, S3, RDS, ElastiCache, ALB, VPC, EMR</div>
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🖥️</span>Amazon EVS (Elastic VMware Service)</summary>
+                                <div class="content">
+                                    <div class="item">Run VMware Cloud Foundation (VCF) on AWS</div>
+                                    <div class="item">Migrate VMs without IP changes, retraining</div>
+                                    <div class="item highlight">No Broadcom licensing (up to 90% savings)</div>
+                                    <div class="item">Provision in hours, not weeks</div>
+                                    <div class="item tip">Use: VMware migration, hybrid environments</div>
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                    <!-- CHOOSING THE RIGHT COMPUTE -->
+                    <details class="level-1">
+                        <summary><span class="emoji">🎯</span>CHOOSING THE RIGHT COMPUTE</summary>
+                        <div class="content">
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🤔</span>Decision Factors</summary>
+                                <div class="content">
+                                    
+                                    <details class="level-3">
+                                        <summary>1. Workload Nature</summary>
+                                        <div class="content">
+                                            <div class="item">Stateless (Web FE, APIs) → Lambda/Fargate</div>
+                                            <div class="item">Stateful (DBs, session maintaining apps) → EC2</div>
+                                            <div class="item">Event-driven → Lambda</div>
+                                            <div class="item">Long-running → EC2/ECS</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>2. Scalability</summary>
+                                        <div class="content">
+                                            <div class="item">Unpredictable → Lambda/Fargate (auto)</div>
+                                            <div class="item">Predictable → EC2 + Auto Scaling</div>
+                                            <div class="item">Massive → HPC instances</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>3. Performance</summary>
+                                        <div class="content">
+                                            <div class="item">General → M-series (Graviton preferred)</div>
+                                            <div class="item">Compute-heavy → C-series</div>
+                                            <div class="item">Memory-heavy → R-series, X-series</div>
+                                            <div class="item">GPU → P-series, G-series, Inf/Trn</div>
+                                            <div class="item">Storage → I-series</div>
+                                        </div>
+                                    </details>
+                                    
+                                    <details class="level-3">
+                                        <summary>4. Cost</summary>
+                                        <div class="content">
+                                            <div class="item">Bursty → Spot (90% savings)</div>
+                                            <div class="item">Steady → RI/Savings Plans (72%)</div>
+                                            <div class="item">Unpredictable → On-Demand</div>
+                                            <div class="item">Fault-tolerant → Spot</div>
+                                        </div>
+                                    </details>
+                                    
+                                </div>
+                            </details>
+                            
+                            <details class="level-2">
+                                <summary><span class="emoji">🛠️</span>Optimization Tools</summary>
+                                <div class="content">
+                                    <div class="item">AWS Compute Optimizer: Right-sizing</div>
+                                    <div class="item">Cost Explorer: Cost analysis</div>
+                                    <div class="item">Trusted Advisor: Best practices</div>
+                                </div>
+                            </details>
+                            
+                        </div>
+                    </details>
+                    
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <script>
+        function expandAll() {
+            const details = document.querySelectorAll('details');
+            details.forEach(detail => detail.open = true);
+        }
+
+        function collapseAll() {
+            const details = document.querySelectorAll('details');
+            details.forEach(detail => detail.open = false);
+        }
+
+        function expandLevel(level) {
+            collapseAll();
+            const levelDetails = document.querySelectorAll(`.level-0, .level-1${level > 1 ? ', .level-2' : ''}${level > 2 ? ', .level-3' : ''}`);
+            levelDetails.forEach(detail => detail.open = true);
+        }
+
+        // Auto-expand level 0 on load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('.level-0').open = true;
+        });
+    </script>
+    
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="../../index.html" style="display: inline-block; padding: 10px 20px; background: #ff6b6b; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">← Back to Learning Journey</a>
+    </div>
+</body>
+</html>

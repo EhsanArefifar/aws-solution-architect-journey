@@ -88,22 +88,30 @@
             transition: all 0.2s;
             user-select: none;
             position: relative;
-            padding-left: 30px;
+            padding-left: 12px;
+            padding-right: 40px;
+            list-style: none;
+        }
+        
+        summary::-webkit-details-marker {
+            display: none;
         }
         
         summary:hover {
             background: #e9ecef;
         }
         
-        summary::before {
-            content: '▶';
+        summary::after {
+            content: "▼";
             position: absolute;
-            left: 10px;
-            transition: transform 0.3s;
+            right: 10px;
+            transition: transform 0.2s;
+            color: #2c3e50;
+            font-size: 12px;
         }
         
-        details[open] > summary::before {
-            transform: rotate(90deg);
+        details[open] > summary::after {
+            transform: rotate(-90deg);
         }
         
         .level-0 > summary {
